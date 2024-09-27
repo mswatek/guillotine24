@@ -238,7 +238,8 @@ conditions = [
     (result['date2'] > '2024-09-09')
     ]
 
-values = ['1','5','4','3','2']
+#values = ['1','5','4','3','2']
+values = [1,5,4,3,2]
 
 result['week'] = np.select(conditions, values) #as defined above
 
