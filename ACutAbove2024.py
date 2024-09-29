@@ -49,14 +49,10 @@ league = League(leagueid)
 
 ############################################# users
 
-@st.cache_data(ttl=3600)
-def load_users():
-    # get all users in a particular league
-    users = league.get_users()
-    users = pd.DataFrame(users)
-    return users
+# get all users in a particular league
+users = league.get_users()
+users = pd.DataFrame(users)
 
-users = load_users()
 
 userlist = users['user_id'].tolist() ## metadata has team name...maybe I can eventually get this to be fully automated
 
@@ -112,18 +108,13 @@ player_df = load_players()
 
 ############################################# matchups
 
-@st.cache_data(ttl=3600)
-def load_matchups():
-    all_matchups1=pd.DataFrame()
-    for i in range(1,currentweek+1): #gotta automate!
-        data = league.get_matchups(i)
-        data1 = pd.DataFrame(data)
-        data1['Week'] = i
-        frames = [all_matchups1,data1]
-        all_matchups1= pd.concat(frames)
-    return all_matchups1
-
-all_matchups1 = load_matchups()
+all_matchups1=pd.DataFrame()
+for i in range(1,currentweek+1): #gotta automate!
+    data = league.get_matchups(i)
+    data1 = pd.DataFrame(data)
+    data1['Week'] = i
+    frames = [all_matchups1,data1]
+    all_matchups1= pd.concat(frames)
 
 
 all_matchups2 = pd.merge(all_matchups1, users_df, left_on='roster_id', right_on='roster_id')
@@ -170,7 +161,6 @@ else:
 all_matchups_box = all_matchups
 
 weekly_dist = px.box(all_matchups_box, x="Week", y="Points",points="all",hover_data="Manager",title="Weekly Distribution") #px.strip take out boxes
-
 
 #####waterfall table
 
