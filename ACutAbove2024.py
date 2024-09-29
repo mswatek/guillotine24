@@ -18,7 +18,7 @@ from sleeper_wrapper import Players
 ####### setting some stuff up
 
 st.set_page_config(page_title="A Cut Above")
-st.title(":blue[A Cut Above]")
+st.title(":blue[A Cut Above 2024]")
 
 leagueid = "1056751362819633152"
 
@@ -28,7 +28,16 @@ now = datetime.now()
 now = now.strftime('%Y-%m-%d')
 
 
-if  now > '2024-09-30': currentweek=5
+if  now > '2024-12-02': currentweek=14
+elif now > '2024-11-25': currentweek=13
+elif now > '2024-11-18': currentweek=12
+elif now > '2024-11-11': currentweek=11
+elif now > '2024-11-04': currentweek=10
+elif now > '2024-10-28': currentweek=9
+elif now > '2024-10-21': currentweek=8
+elif now > '2024-10-14': currentweek=7
+elif now > '2024-10-07': currentweek=6
+elif now > '2024-09-30': currentweek=5
 elif now > '2024-09-23': currentweek=4
 elif now > '2024-09-16': currentweek=3
 elif now > '2024-09-09': currentweek=2
@@ -232,14 +241,24 @@ result['day_of_week'] = result['date2'].dt.day_name()
 
 conditions = [
     (result['date2'] < '2024-09-09'),
+    (result['date2'] > '2024-12-02'),
+    (result['date2'] > '2024-11-25'),
+    (result['date2'] > '2024-11-18'),
+    (result['date2'] > '2024-11-11'),
+    (result['date2'] > '2024-11-04'),
+    (result['date2'] > '2024-10-28'),
+    (result['date2'] > '2024-10-21'),
+    (result['date2'] > '2024-10-14'),
+    (result['date2'] > '2024-10-07'),
     (result['date2'] > '2024-09-30'),
     (result['date2'] > '2024-09-23'),
     (result['date2'] > '2024-09-16'),
     (result['date2'] > '2024-09-09')
     ]
 
+
 #values = ['1','5','4','3','2']
-values = [1,5,4,3,2]
+values = [1,14,13,12,11,10,9,8,7,6,5,4,3,2]
 
 result['week'] = np.select(conditions, values) #as defined above
 
@@ -623,3 +642,4 @@ with tab4:
     "{rate} has the highest waiver success rate, and {rate2} has the lowest. {active} has been the most active on waivers, when including back-up bids that didn't get processed."\
         .format(bid=bid_text,money=money_text,rate=rate_text,rate2=rate_text2,active=active_text))
    st.dataframe(manager_overall_df, hide_index=True) #the only other thing I could add here is highest week of money spending; also, its huge - maybe split into two tables
+
