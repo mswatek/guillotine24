@@ -256,9 +256,9 @@ week_manager_df = pd.merge(df,all_matchups_manager, on=['Week','Manager'],how='l
 trans_summary = transactions_df.query("type == 'waiver' & week != '1'").groupby(['week','Manager']).agg(WinningBids=('waiver_bid', 'count'),MoneySpent=('waiver_bid', 'sum'),MaxPlayer=('waiver_bid', 'max'),MedianPlayer=('waiver_bid', 'median')).reset_index()
 trans_summary['week'] = trans_summary['week'].astype(int)
 
+
 week_manager_df = pd.merge(week_manager_df, trans_summary,left_on=['Week','Manager'], right_on=['week','Manager'],how='left')
 week_manager_df['Week'] = week_manager_df['Week'].astype(int)
-
 
 week_manager_df['MoneySpent'] = np.where((week_manager_df['MoneySpent'].isnull()), 0, week_manager_df['MoneySpent'])
 week_manager_df['Cumulative Spend'] = week_manager_df.groupby(['Manager'])['MoneySpent'].cumsum()
@@ -280,7 +280,7 @@ week_overall_df = transactions_df.query("type == 'waiver'").groupby(['week']).ag
 position_overall_df = transactions_df.query("type == 'waiver'").groupby(['Position']).agg(WinningBids=('waiver_bid', 'count'),MoneySpent=('waiver_bid', 'sum'),MaxPlayer=('waiver_bid', 'max'),MedianPlayer=('waiver_bid', 'median')).reset_index()
 
 ###budget charts
-week_manager_budget = px.area(week_manager_df, x="Week", y="Budget Percent", color='Manager',title="Budget Percent by Week") ##changed from line chart
+week_manager_budget = px.area(week_manager_df, x="Week", y="Budget Percent", color='Manager',title="Budget Percent by Week").update_xaxes(type='category', categoryorder='category ascending') ##changed from line chart
 week_budget_chart = px.bar(week_budget_df, x="Week", y="RemainingBudget",text_auto='.2s',title="Overall Budget Remaining by Week")
 
 ############# adds
@@ -305,16 +305,15 @@ adds_player = adds_df_combined.query("type == 'waiver'").groupby(['week','Name',
     .agg(Bids=('Position', 'count'),WinningBid=('Winning Bid', 'max'),LosingBids=('Losing Bids', 'count'), LosingAmounts=('Max Losing Bid', 'sum'),\
          LosingMax=('Max Losing Bid', 'max'),LosingMin=('Max Losing Bid', 'min'),LosingAvg=('Max Losing Bid', 'mean'),LosingMedian=('Max Losing Bid', 'median')).reset_index()
 
-
-
 adds_player = adds_player[adds_player['WinningBid'].notna()]
 adds_player = adds_player.sort_values(by='WinningBid',ascending=False)
 adds_player['Difference'] = adds_player['WinningBid'] - adds_player['LosingMax']
 
 ##bring in manager for top and second-highest bid
-adds_manager = adds_df.query("notes !='Unfortunately, your roster will have too many players after this transaction.'")[['Name','Manager','week','waiver_bid']]
+adds_manager = adds_df.query("notes !='Unfortunately, your roster will have too many players after this transaction.'")[['Name','Manager','week','waiver_bid','status']]
 
 adds_player = pd.merge(adds_player, adds_manager, left_on=['week','Name','WinningBid'], right_on=['week','Name','waiver_bid'],how='left').drop_duplicates().reset_index(drop=True)
+adds_player = adds_player.loc[(adds_player['status']=='complete')]
 adds_player = pd.merge(adds_player, adds_manager, left_on=['week','Name','LosingMax'], right_on=['week','Name','waiver_bid'],how='left').drop_duplicates().reset_index(drop=True)
 adds_player['check_dupes'] = adds_player.duplicated(subset=['week','Name','Manager_x','waiver_bid_x'], keep=False).astype(int).astype(float)
 
@@ -415,11 +414,14 @@ manager_overall_df = manager_overall_df[['Manager','Weeks_Alive','WinningBids','
 #####power rankings
 
 
-if week_manager_df.loc[(week_manager_df['Points']>0) & (week_manager_df['Week'] == currentweek), 'Manager'].shape[0] ==managers_alive:
-    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek) & (week_manager_df['Status']=='Alive')]
+#if week_manager_df.loc[(week_manager_df['Points']>0) & (week_manager_df['Week'] == currentweek), 'Manager'].shape[0] ==managers_alive:
+#    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek) & (week_manager_df['Status']=='Alive')]
 
-else:
-    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek-1) & (week_manager_df['Status']=='Alive')]
+#else:
+#    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek-1) & (week_manager_df['Status']=='Alive')]
+
+power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek) & (week_manager_df['Status']=='Alive')]
+
 
 ### messing around with a sliding weight for rolling score vs budget
 power_rankings['rolling_z'] = (power_rankings['3-Week Rolling Avg'] - power_rankings['3-Week Rolling Avg'].mean())/power_rankings['3-Week Rolling Avg'].std(ddof=0)
@@ -561,7 +563,7 @@ with tab1:
     st.write("Below are charts showing points by week, rolling average, and cumulative. {mostpoints} has scored the most points so far, while {rolling} has the best 3-week rolling average."\
                 .format(mostpoints=most_points_text,rolling=most_rpoints_text))
    line = st.radio("Choose Metric:", ['Points','3-Week Rolling Avg','Rolling Rank','Cumulative Points'])
-   weekly_scoring_chart = px.line(all_matchups, x="Week", y=line, color="Manager",markers=True).update_layout(title="Manager "+line+" by Week")
+   weekly_scoring_chart = px.line(all_matchups, x="Week", y=line, color="Manager",markers=True).update_layout(title="Manager "+line+" by Week").update_xaxes(type='category')
    st.plotly_chart(weekly_scoring_chart, theme=None,use_container_width=True)
    st.write("As the season has progressed, every team has steadily gotten better. The boxplots below show how the scores have been distributed each week. The average goes up, but so does the lowest score.")
    st.plotly_chart(weekly_dist, theme=None,use_container_width=True)
@@ -577,8 +579,8 @@ with tab2:
    st.write("Let's take a closer look at how waivers have gone this season. You can use the radio button to view money spent, number of winning bids, or max bid for each of the charts below.")
    bar = st.radio("Choose Metric:", ['MoneySpent','WinningBids','MaxPlayer'])
    st.write("The manager spend chart shows when and how much each manager has spent on shiny new toys.")
-   week_manager_chart = px.bar(week_manager_df_chart, x="week", y=bar, color="Manager").update_layout(title="Manager "+bar+" by Week")
-   week_position_chart = px.bar(week_position_df, x="week", y=bar, color="Position").update_layout(title="Position "+bar+" by Week")
+   week_manager_chart = px.bar(week_manager_df_chart, x="week", y=bar, color="Manager").update_layout(title="Manager "+bar+" by Week").update_xaxes(type='category')
+   week_position_chart = px.bar(week_position_df, x="week", y=bar, color="Position").update_layout(title="Position "+bar+" by Week").update_xaxes(type='category')
    manager_position_chart = px.bar(manager_position_df, x="Manager", y=bar, color="Position").update_layout(title="Manager "+bar+" by Position")
    position_overall_chart = px.bar(position_overall_df, x="Position", y=bar,text_auto='.2s').update_layout(title=bar+" by Position")
    st.plotly_chart(week_manager_chart, theme=None,use_container_width=True)
@@ -598,7 +600,7 @@ with tab3:
    st.dataframe(adds_player, hide_index=True) ## sort options: by difference to find closest and furthest...do callouts (wides and narrowest bid gaps)
    st.write("The chart and table below show the players that got picked up from waivers multiple times. How did their valuation change over the season?")
    line = st.radio("Choose Metric:", ['Bids','WinningBid'])
-   multi_waiver_chart = px.line(adds_player_chart, x="Counter", y=line,markers=True, color="Name",hover_data=['week']).update_layout(title="Manager "+line+" by Week")
+   multi_waiver_chart = px.line(adds_player_chart, x="Counter", y=line,markers=True, color="Name",hover_data=['week']).update_layout(title="Manager "+line+" by Week").update_xaxes(type='category')
    st.plotly_chart(multi_waiver_chart, theme=None,use_container_width=True)
    st.dataframe(adds_player_summary,hide_index=True) ##add total bids and number of free agent pickups
    st.write("This scatterplot looks at how close the waiver contests were. Dots below the line are closely-contested waivers, while ones above the line may have been overpays.")
@@ -618,7 +620,6 @@ with tab4:
    st.divider()
    st.header("Waivers")
    st.write("The table below summarizes how every manager has done on waivers. {bid} has won the most bids, {money} has spent the most money, "\
-    "{rate} has highest waiver success rate, and {rate2} has the lowest. {active} has been the most active on waivers, when including back-up bids that didn't get processed."\
+    "{rate} has the highest waiver success rate, and {rate2} has the lowest. {active} has been the most active on waivers, when including back-up bids that didn't get processed."\
         .format(bid=bid_text,money=money_text,rate=rate_text,rate2=rate_text2,active=active_text))
    st.dataframe(manager_overall_df, hide_index=True) #the only other thing I could add here is highest week of money spending; also, its huge - maybe split into two tables
-
