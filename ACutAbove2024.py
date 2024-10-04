@@ -423,13 +423,13 @@ manager_overall_df = manager_overall_df[['Manager','Weeks_Alive','WinningBids','
 #####power rankings
 
 
-#if week_manager_df.loc[(week_manager_df['Points']>0) & (week_manager_df['Week'] == currentweek), 'Manager'].shape[0] ==managers_alive:
-#    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek) & (week_manager_df['Status']=='Alive')]
+if week_manager_df.loc[(week_manager_df['Points']>0) & (week_manager_df['Week'] == currentweek), 'Manager'].shape[0] ==managers_alive:
+    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek) & (week_manager_df['Status']=='Alive')]
 
-#else:
-#    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek-1) & (week_manager_df['Status']=='Alive')]
+else:
+    power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek-1) & (week_manager_df['Status']=='Alive')]
 
-power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek) & (week_manager_df['Status']=='Alive')]
+#power_rankings = week_manager_df.loc[(week_manager_df['Week']== currentweek) & (week_manager_df['Status']=='Alive')]
 
 
 ### messing around with a sliding weight for rolling score vs budget
