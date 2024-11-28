@@ -289,7 +289,8 @@ week_overall_df = transactions_df.query("type == 'waiver'").groupby(['week']).ag
 position_overall_df = transactions_df.query("type == 'waiver'").groupby(['Position']).agg(WinningBids=('waiver_bid', 'count'),MoneySpent=('waiver_bid', 'sum'),MaxPlayer=('waiver_bid', 'max'),MedianPlayer=('waiver_bid', 'median')).reset_index()
 
 ###budget charts
-week_manager_budget = px.area(week_manager_df, x="Week", y="Budget Percent", color='Manager',title="Budget Percent by Week").update_xaxes(type='category', categoryorder='category ascending') ##changed from line chart
+week_manager_budget = px.area(week_manager_df, x="Week", y="Budget Percent", color='Manager',title="Budget Percent by Week")
+#week_manager_budget = px.area(week_manager_df, x="Week", y="Budget Percent", color='Manager',title="Budget Percent by Week").update_xaxes(type='category', categoryorder='category ascending') ##changed from line chart
 week_budget_chart = px.bar(week_budget_df, x="Week", y="RemainingBudget",text_auto='.2s',title="Overall Budget Remaining by Week")
 
 ############# adds
@@ -588,7 +589,7 @@ with tab2:
    st.write("Let's take a closer look at how waivers have gone this season. You can use the radio button to view money spent, number of winning bids, or max bid for each of the charts below.")
    bar = st.radio("Choose Metric:", ['MoneySpent','WinningBids','MaxPlayer'])
    st.write("The manager spend chart shows when and how much each manager has spent on shiny new toys.")
-   week_manager_chart = px.bar(week_manager_df_chart, x="week", y=bar, color="Manager").update_layout(title="Manager "+bar+" by Week").update_xaxes(type='category')
+   week_manager_chart = px.bar(week_manager_df_chart, x="week", y=bar, color="Manager").update_layout(title="Manager "+bar+" by Week")
    week_position_chart = px.bar(week_position_df, x="week", y=bar, color="Position").update_layout(title="Position "+bar+" by Week").update_xaxes(type='category')
    manager_position_chart = px.bar(manager_position_df, x="Manager", y=bar, color="Position").update_layout(title="Manager "+bar+" by Position")
    position_overall_chart = px.bar(position_overall_df, x="Position", y=bar,text_auto='.2s').update_layout(title=bar+" by Position")
